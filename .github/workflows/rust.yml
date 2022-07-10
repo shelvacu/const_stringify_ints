@@ -1,0 +1,46 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+  miri:
+    name: "Miri"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Nightly
+        run: |
+          rustup toolchain install nightly --component miri
+          rustup override set nightly
+      - name: Setup MIRI
+        run: cargo miri setup
+      - name: Test with Miri
+        run: cargo miri test --verbose
+  miri_32:
+    name: "Miri - 32-bit"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Miri
+        run: |
+          rustup toolchain install nightly --component miri
+          rustup override set nightly
+      - name: Setup MIRI
+        run: cargo miri setup --target i686-unknown-linux-gnu
+      - name: Test with Miri on 32-bit target
+        run: cargo miri test --verbose --target i686-unknown-linux-gnu

@@ -1,118 +1,29 @@
-use std::str;
+#![no_std]
 
-// const fn const_digits_u128<const N: u128>() -> &'static [u8; 39] {
-//     &[
-//         (N / (10u128.pow(38)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(37)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(36)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(35)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(34)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(33)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(32)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(31)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(30)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(29)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(28)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(27)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(26)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(25)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(24)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(23)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(22)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(21)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(20)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(19)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(18)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(17)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(16)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(15)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(14)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(13)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(12)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(11)) % 10) as u8 + b'0',
-//         (N / (10u128.pow(10)) % 10) as u8 + b'0',
-//         (N / (10u128.pow( 9)) % 10) as u8 + b'0',
-//         (N / (10u128.pow( 8)) % 10) as u8 + b'0',
-//         (N / (10u128.pow( 7)) % 10) as u8 + b'0',
-//         (N / (10u128.pow( 6)) % 10) as u8 + b'0',
-//         (N / (10u128.pow( 5)) % 10) as u8 + b'0',
-//         (N / (10u128.pow( 4)) % 10) as u8 + b'0',
-//         (N / (10u128.pow( 3)) % 10) as u8 + b'0',
-//         (N / (10u128.pow( 2)) % 10) as u8 + b'0',
-//         (N / (10u128.pow( 1)) % 10) as u8 + b'0',
-//         (N / (10u128.pow( 0)) % 10) as u8 + b'0',
-//     ]
-// }
+//! This library solves a very specific problem: You have a (possibly generic) constant integer, and you want it as a `&'static str`.
+//! 
+//! All methods are named `const_str_` and then the type.
+//! 
+//! ```
+//! use const_stringify_ints::*;
+//! 
+//! const SIZE_OF_MY_ARR:usize = 294;
+//! const SIZE_STR:&'static str = const_str_usize::<SIZE_OF_MY_ARR>();
+//! 
+//! assert_eq!(SIZE_OF_MY_ARR.to_string().as_str(), SIZE_STR);
+//! ```
+//! 
+//! # Support
+//! 
+//! This library supports `no_std` environments.
+//! 
+//! This library should in theory support targets with a 16-bit, however I don't have a way of testing this. Additionaly, these targets are likely very memory-constrained, and this crate always 'allocates' 5 bytes of static memory for a `u16` even when only 1 byte is needed.
 
-// const fn const_digits_u64<const N: u64>() -> &'static [u8; 20] {
-//     &[
-//         (N / (10u64.pow(18)) % 10) as u8 + b'0',
-//         (N / (10u64.pow(19)) % 10) as u8 + b'0',
-//         (N / (10u64.pow(17)) % 10) as u8 + b'0',
-//         (N / (10u64.pow(16)) % 10) as u8 + b'0',
-//         (N / (10u64.pow(15)) % 10) as u8 + b'0',
-//         (N / (10u64.pow(14)) % 10) as u8 + b'0',
-//         (N / (10u64.pow(13)) % 10) as u8 + b'0',
-//         (N / (10u64.pow(12)) % 10) as u8 + b'0',
-//         (N / (10u64.pow(11)) % 10) as u8 + b'0',
-//         (N / (10u64.pow(10)) % 10) as u8 + b'0',
-//         (N / (10u64.pow( 9)) % 10) as u8 + b'0',
-//         (N / (10u64.pow( 8)) % 10) as u8 + b'0',
-//         (N / (10u64.pow( 7)) % 10) as u8 + b'0',
-//         (N / (10u64.pow( 6)) % 10) as u8 + b'0',
-//         (N / (10u64.pow( 5)) % 10) as u8 + b'0',
-//         (N / (10u64.pow( 4)) % 10) as u8 + b'0',
-//         (N / (10u64.pow( 3)) % 10) as u8 + b'0',
-//         (N / (10u64.pow( 2)) % 10) as u8 + b'0',
-//         (N / (10u64.pow( 1)) % 10) as u8 + b'0',
-//         (N / (10u64.pow( 0)) % 10) as u8 + b'0',
-//     ]
-// }
-
-// const fn const_digits_u32<const N: u32>() -> &'static [u8; 10] {
-//     &[
-//         (N / (10u32.pow( 9)) % 10) as u8 + b'0',
-//         (N / (10u32.pow( 8)) % 10) as u8 + b'0',
-//         (N / (10u32.pow( 7)) % 10) as u8 + b'0',
-//         (N / (10u32.pow( 6)) % 10) as u8 + b'0',
-//         (N / (10u32.pow( 5)) % 10) as u8 + b'0',
-//         (N / (10u32.pow( 4)) % 10) as u8 + b'0',
-//         (N / (10u32.pow( 3)) % 10) as u8 + b'0',
-//         (N / (10u32.pow( 2)) % 10) as u8 + b'0',
-//         (N / (10u32.pow( 1)) % 10) as u8 + b'0',
-//         (N / (10u32.pow( 0)) % 10) as u8 + b'0',
-//     ]
-// }
-
-// const fn const_digits_u16<const N: u16>() -> &'static [u8; 5] {
-//     &[
-//         (N / (10u16.pow( 4)) % 10) as u8 + b'0',
-//         (N / (10u16.pow( 3)) % 10) as u8 + b'0',
-//         (N / (10u16.pow( 2)) % 10) as u8 + b'0',
-//         (N / (10u16.pow( 1)) % 10) as u8 + b'0',
-//         (N / (10u16.pow( 0)) % 10) as u8 + b'0',
-//     ]
-// }
-
-// #[cfg(target_pointer_width = "128")]
-// const fn const_digits<const N: usize>() -> &'static [u8; 39] {
-//     const_digits_u128::<{N as u128}>()
-// }
-
-// #[cfg(target_pointer_width = "64")]
-// const fn const_digits<const N: usize>() -> &'static [u8; 20] {
-//     const_digits_u64::<{N as u64}>()
-// }
-
-// #[cfg(target_pointer_width = "32")]
-// const fn const_digits<const N: usize>() -> &'static [u8; 10] {
-//     const_digits_u32::<{N as u32}>()
-// }
-
-// #[cfg(target_pointer_width = "16")]
-// const fn const_digits<const N: usize>() -> &'static [u8; 10] {
-//     const_digits_u16::<{N as u16}>()
-// }
+use core::str;
+#[cfg(test)]
+extern crate alloc;
+#[cfg(test)]
+use alloc::string::ToString;
 
 macro_rules! impl_everything {
     (
@@ -131,7 +42,7 @@ macro_rules! impl_everything {
             $($n: literal,)*
         },
     ) => {
-        const fn $method_unsigned<const N: $ty_unsigned>() -> &'static [u8; { $( (($n_unsized - $n_unsized) + 1) + )* $( ($n - $n + 1) + )* 0 }] {
+        const fn $method_unsigned<const N: $ty_unsigned>() -> &'static [u8; { ($( (($n_unsized - $n_unsized) + 1) + )* $( (($n as $ty_unsigned) - $n + 1) + )* 0) as usize }] {
             &[
                 $(
                     (N / $n_unsized % 10) as u8 + b'0',
@@ -154,7 +65,7 @@ macro_rules! impl_everything {
             ]
         }
 
-        const fn $method_signed<const N: $ty_signed>() -> &'static [u8; { $( (($n - $n) + 1) + )* 1 }] {
+        const fn $method_signed<const N: $ty_signed>() -> &'static [u8; { ($( ((($n as $ty_unsigned) - $n) + 1) + )* 1) as usize }] {
             &[
                 numeric_if!(
                     if [(N >> $bits) as u8] {
@@ -190,14 +101,6 @@ macro_rules! impl_everything {
         #[cfg(target_pointer_width = $width)]
         const fn const_digits_isize<const N: isize>() -> &'static [u8; { $( (($n - $n) + 1) + )* 1 }] {
             &[
-                // if N < 0 { b'-' } else { b'0' },
-                // $(
-                //     if $n > 0 && (N / $n % 10) == 0 {
-                //         b'-'
-                //     } else {
-                //         (N / $n % 10) as u8 + b'0'
-                //     },
-                // )*
                 numeric_if!(
                     if [(N >> $bits) as u8] {
                         b'-'
@@ -205,12 +108,10 @@ macro_rules! impl_everything {
                         b'0'
                     }
                 ),
-                //(((N >> $bits) as u8) & b'-') | ((!(N >> $bits) as u8) & b'0'),
                 $(
                     numeric_if!(
                         if [(N >> $bits) as u8] {
                             boolific_if!(
-                                // if [absolute!((N), $ty_unsigned) < $n]:u8 {
                                 if [N > -$n]:u8 {
                                     b'-'
                                 } else {
@@ -219,7 +120,6 @@ macro_rules! impl_everything {
                             )
                         } else {
                             boolific_if!(
-                                // if [absolute!((N), $ty_unsigned) < $n]:u8 {
                                 if [N < $n]:u8 {
                                     b'0'
                                 } else {
@@ -228,11 +128,18 @@ macro_rules! impl_everything {
                             )
                         }
                     ),
-                    //(((N >> $bits) as u8) & b'-') | ((!(N >> $bits) as u8) & ((N / $n % 10) as u8 + b'0')),
                 )*
             ]
         }
 
+        /// Returns the const parameter `N` as a `&'static str`.
+        /// 
+        /// ```
+        /// # use const_stringify_ints::*;
+        #[doc=concat!("const MY_AWESOME_NUMBER:", stringify!($ty_unsigned), " = 123;")]
+        /// 
+        #[doc=concat!("assert_eq!(\"123\",", stringify!($str_method_unsigned) ,"::<MY_AWESOME_NUMBER>());")]
+        /// ```
         pub const fn $str_method_unsigned<const N: $ty_unsigned>() -> &'static str {
             if N == 0 {
                 return "0";
@@ -249,6 +156,14 @@ macro_rules! impl_everything {
             unsafe { str::from_utf8_unchecked(digits) }
         }
 
+        /// Returns the const parameter `N` as a `&'static str`.
+        /// 
+        /// ```
+        /// # use const_stringify_ints::*;
+        #[doc=concat!("const MY_AWESOME_NUMBER:", stringify!($ty_signed), " = -123;")]
+        /// 
+        #[doc=concat!("assert_eq!(\"-123\",", stringify!($str_method_signed) ,"::<MY_AWESOME_NUMBER>());")]
+        /// ```
         pub const fn $str_method_signed<const N: $ty_signed>() -> &'static str {
             if N == 0 {
                 return "0";
@@ -375,24 +290,8 @@ macro_rules! nonzero {
     };
 }
 
-macro_rules! get_bit {
-    ( $a:tt, $index:literal, $size:tt ) => {
-        nonzero!(($a & 1 << $index), $size)
-    };
-}
-
-// macro_rules! cmp {
-//     ( $a:tt < $b:tt ) => {
-//         $a ^ $b //where they differ
-//         $a & !$b //1 where a > b
-//         !$a & $b //1 where a < b
-
-//     }
-// }
-
 #[cfg(test)]
 mod macro_tests {
-    use super::*;
 
     #[test]
     fn test_wrapping_inc() {
@@ -414,6 +313,7 @@ mod macro_tests {
         );
     }
 
+    #[cfg(target_pointer_width = "64")]
     #[test]
     fn test_abs() {
         assert_eq!(
@@ -429,8 +329,29 @@ mod macro_tests {
             128
         );
         assert_eq!(
-            absolute!((i64::MIN as isize), u64),
+            absolute!((isize::MIN), u64),
             i64::MIN.unsigned_abs()
+        );
+    }
+
+    #[cfg(target_pointer_width = "32")]
+    #[test]
+    fn test_abs() {
+        assert_eq!(
+            absolute!(0isize, u32),
+            0
+        );
+        assert_eq!(
+            absolute!((-1isize), u32),
+            1
+        );
+        assert_eq!(
+            absolute!((-128isize), u32),
+            128
+        );
+        assert_eq!(
+            absolute!((isize::MIN), u32),
+            i32::MIN.unsigned_abs()
         );
     }
 
@@ -495,31 +416,6 @@ mod macro_tests {
     }
 }
 
-const fn const_digits_ishsize<const N: isize>() -> &'static [u8; 2] {
-    &[
-        //(((N >> 63) as u8) & b'-') | ((!(N >> 63) as u8) & b'0'),
-        numeric_if!(
-            if [(N >> 63) as u8] { b'-' } else { b'0' | (N < 5) as u8 }
-        ),
-        // boolific_if!(
-        //     if [N > 1 && 4 < 3]:u8 { b'*' } else { b'.' }
-        // ),
-        boolific_if!(
-            if [N > 1]:u8 {
-                boolific_if!(
-                    if [3 < 4]:u8 {
-                        b'*'
-                    } else {
-                        b'q'
-                    }
-                )
-            } else {
-                wrapping_inc!((255u8))
-            }
-        ),
-    ]
-}
-
 impl_everything!{ u8, i8, "8", 7, const_digits_u8, const_digits_i8, const_str_u8, const_str_i8, {}, {
     100,
     10,
@@ -567,48 +463,56 @@ impl_everything!{ u64, i64, "64", 63, const_digits_u64, const_digits_i64, const_
     10,
     1,
 },}
-// impl_everything!{ u128, i128, "128", 127, const_digits_u128, const_digits_i128, const_str_u128, const_str_i128, {}, {
-//     100000000000000000000000000000000000000,
-//     10000000000000000000000000000000000000,
-//     1000000000000000000000000000000000000,
-//     100000000000000000000000000000000000,
-//     10000000000000000000000000000000000,
-//     1000000000000000000000000000000000,
-//     100000000000000000000000000000000,
-//     10000000000000000000000000000000,
-//     1000000000000000000000000000000,
-//     100000000000000000000000000000,
-//     10000000000000000000000000000,
-//     1000000000000000000000000000,
-//     100000000000000000000000000,
-//     10000000000000000000000000,
-//     1000000000000000000000000,
-//     100000000000000000000000,
-//     10000000000000000000000,
-//     1000000000000000000000,
-//     100000000000000000000,
-//     10000000000000000000,
-//     1000000000000000000,
-//     100000000000000000,
-//     10000000000000000,
-//     1000000000000000,
-//     100000000000000,
-//     10000000000000,
-//     1000000000000,
-//     100000000000,
-//     10000000000,
-//     1000000000,
-//     100000000,
-//     10000000,
-//     1000000,
-//     100000,
-//     10000,
-//     1000,
-//     100,
-//     10,
-//     1,
-// },}
+impl_everything!{ u128, i128, "128", 127, const_digits_u128, const_digits_i128, const_str_u128, const_str_i128, {}, {
+    100000000000000000000000000000000000000,
+    10000000000000000000000000000000000000,
+    1000000000000000000000000000000000000,
+    100000000000000000000000000000000000,
+    10000000000000000000000000000000000,
+    1000000000000000000000000000000000,
+    100000000000000000000000000000000,
+    10000000000000000000000000000000,
+    1000000000000000000000000000000,
+    100000000000000000000000000000,
+    10000000000000000000000000000,
+    1000000000000000000000000000,
+    100000000000000000000000000,
+    10000000000000000000000000,
+    1000000000000000000000000,
+    100000000000000000000000,
+    10000000000000000000000,
+    1000000000000000000000,
+    100000000000000000000,
+    10000000000000000000,
+    1000000000000000000,
+    100000000000000000,
+    10000000000000000,
+    1000000000000000,
+    100000000000000,
+    10000000000000,
+    1000000000000,
+    100000000000,
+    10000000000,
+    1000000000,
+    100000000,
+    10000000,
+    1000000,
+    100000,
+    10000,
+    1000,
+    100,
+    10,
+    1,
+},}
 
+/// Returns the const parameter `N` as a `&'static str`.
+/// 
+/// ```
+/// # use const_stringify_ints::*;
+/// const MY_ARRAY_SIZE:usize = 321;
+///
+/// assert_eq!("321", const_str_usize::<MY_ARRAY_SIZE>());
+/// ```
 pub const fn const_str_usize<const N: usize>() -> &'static str {
     if N == 0 {
         return "0";
@@ -625,6 +529,14 @@ pub const fn const_str_usize<const N: usize>() -> &'static str {
     unsafe { str::from_utf8_unchecked(digits) }
 }
 
+/// Returns the const parameter `N` as a `&'static str`.
+/// 
+/// ```
+/// # use const_stringify_ints::*;
+/// const MY_NEAT_INT:isize = -420;
+///
+/// assert_eq!("-420", const_str_isize::<MY_NEAT_INT>());
+/// ```
 pub const fn const_str_isize<const N: isize>() -> &'static str {
     if N == 0 {
         return "0";
@@ -661,23 +573,21 @@ mod test {
         assert_eq!("1", const_str_usize::<1>());
         assert_eq!("128", const_str_usize::<128>());
         assert_eq!("99", const_str_usize::<99>());
-        #[cfg(target_pointer_width = "64")]
-        assert_eq!("18446744073709551615", const_str_usize::<18446744073709551615>());
+        assert_eq!(usize::MAX.to_string().as_str(), const_str_usize::<{ usize::MAX }>());
 
         assert_eq!("-1", const_str_isize::< -1 >());
         assert_eq!("-128", const_str_isize::< -128 >());
         assert_eq!("-256", const_str_isize::< -256 >());
-        #[cfg(target_pointer_width = "64")]
-        assert_eq!("-9223372036854775808", const_str_isize::< -9223372036854775808 >());
+        assert_eq!(isize::MIN.to_string().as_str(), const_str_isize::<{ isize::MIN }>());
         assert_eq!("1", const_str_isize::< 1 >());
         assert_eq!("2", const_str_isize::< 2 >());
         assert_eq!("10", const_str_isize::< 10 >());
-        #[cfg(target_pointer_width = "64")]
-        assert_eq!("9223372036854775807", const_str_isize::< 9223372036854775807 >());
+        assert_eq!(isize::MAX.to_string().as_str(), const_str_isize::<{ isize::MAX }>());
 
         assert_eq!("0", const_str_u16::<0>());
         assert_eq!("1", const_str_u16::<1>());
         assert_eq!("1000", const_str_u16::<1000>());
+        assert_eq!("9999", const_str_u16::<9999>());
         assert_eq!("65535", const_str_u16::<65535>());
 
         assert_eq!("0", const_str_i16::<0>());
